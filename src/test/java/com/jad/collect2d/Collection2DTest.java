@@ -1,7 +1,5 @@
 package com.jad.collect2d;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,15 +51,15 @@ class Collection2DTest {
     @Test
     void remove() {
         for (Collection2DElementTest element : Collection2DTest.ELEMENTS_ADDED) {
-            assertEquals(element, Collection2DTest.COLLECTION.remove(element),
-                         "Element's list location at location " + element.getLocation() + " is not the same as the removed element.");
+            assertTrue(Collection2DTest.COLLECTION.remove(element),
+                       "Remove an element present in the collection should return true.");
             List<Collection2DElementTest> elements = Collection2DTest.COLLECTION.get(element.getLocation());
             if (elements != null) {
                 assertFalse(elements.contains(element),
                             "Element's location list at location " + element.getLocation() + " should not contain the element.");
             }
             assertNull(element.getCollection(),
-                       "Element's collection is not null after remove.");
+                       "Element's collection should be null after being removed from the collection.");
         }
         assertThrows(IllegalArgumentException.class, () -> Collection2DTest.COLLECTION.remove(null),
                      "Element cannot be null.");
@@ -80,6 +78,7 @@ class Collection2DTest {
         assertEquals(new Dimension(Collection2DTest.WIDTH_TEST, Collection2DTest.HEIGHT_TEST),
                      Collection2DTest.COLLECTION.getDimension(),
                      "Collection's dimension is not the same as the expected dimension.");
+        Collection2DTest.COLLECTION.clear();
         assertEquals(new Dimension(0, 0), Collection2DTest.COLLECTION.getDimension(),
                      "Collection's dimension is not the same as the expected dimension.");
         Collection2DTest.COLLECTION.add(new Collection2DElementTest(new Point(10, 100)));
@@ -128,11 +127,9 @@ class Collection2DTest {
                    "Collection should contain the element at the new position.");
     }
 
-    @Getter
-    @Setter
-    private static class Collection2DElementTest implements Collection2DElement {
+    private static class Collection2DElementTest implements Collection2DElement<Collection2DElementTest> {
         private Point location;
-        private Collection2D<Collection2DElement> collection;
+        private Collection2D<Collection2DElementTest> collection;
 
         public Collection2DElementTest() {
             this(new Point(0, 0));
@@ -140,6 +137,33 @@ class Collection2DTest {
 
         public Collection2DElementTest(final Point location) {
             this.location = location;
+        }
+
+        public void setLocation(final Point newLocation) {
+            this.notifyCollectionAnLocationUpdate(this.getLocation(), newLocation);
+            this.location = newLocation;
+        }
+
+        @Override
+        public Point getLocation() {
+            return this.location;
+        }
+
+        @Override
+        public Collection2D<Collection2DElementTest> getCollection() {
+            return this.collection;
+        }
+
+        @Override
+        public void setCollection(final Collection2D<Collection2DElementTest> collection) {
+            this.collection = collection;
+        }
+
+        public void notifyCollectionAnLocationUpdate(final Point oldLocation, final Point newLocation) {
+            if (this.collection == null) return;
+            if (oldLocation != null && this.getCollection() != null) {
+                this.collection.updateElementPosition(this, oldLocation, newLocation);
+            }
         }
     }
 }
