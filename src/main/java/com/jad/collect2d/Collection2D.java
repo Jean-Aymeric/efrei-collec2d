@@ -20,4 +20,8 @@ public class Collection2D<E extends Collection2DElement> extends HashMap<Point, 
     public Dimension getDimension() {
         return null;
     }
+
+    public List<E> toList() {
+        return null;
+    }
 }
